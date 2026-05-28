@@ -58,3 +58,5 @@ class CreateEmailLogsTable extends Migration
         $this->forge->dropTable('email_logs');
     }
 }
+
+php spark migrate
