@@ -1,0 +1,3 @@
+# Run in terminal
+php spark make:migration CreateUploadsTable
+php spark make:migration CreateEmailLogsTable
