@@ -1,0 +1,43 @@
+<?php
+namespace App\Services;
+
+use App\Models\EmailLogModel;
+use CodeIgniter\Email\Email;
+
+class EmailService
+{
+    protected Email $email;
+    protected EmailLogModel $logModel;
+
+    public function __construct()
+    {
+        $this->email    = \Config\Services::email();
+        $this->logModel = new EmailLogModel();
+    }
+
+    public function send(string $to, string $subject, string $body): bool
+    {
+        $this->email->setTo($to);
+        $this->email->setSubject($subject);
+        $this->email->setMessage($body);
+
+        $status   = 'sent';
+        $errorMsg = null;
+
+        if (!$this->email->send()) {
+            $status   = 'failed';
+            $errorMsg = $this->email->printDebugger(['headers']);
+        }
+
+        $this->logModel->insert([
+            'to_email'  => $to,
+            'subject'   => $subject,
+            'body'      => $body,
+            'status'    => $status,
+            'error_msg' => $errorMsg,
+            'sent_at'   => date('Y-m-d H:i:s'),
+        ]);
+
+        return $status === 'sent';
+    }
+}
