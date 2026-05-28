@@ -1,0 +1,26 @@
+# app/.env
+
+CI_ENVIRONMENT = development   # Change to "production" when live
+
+app.baseURL = 'http://localhost:8080/'
+app.defaultLocale = 'en'
+app.appTimezone = 'Asia/Manila'
+
+# Database
+database.default.hostname = localhost
+database.default.database = your_db_name
+database.default.username = your_db_user
+database.default.password = your_db_pass
+database.default.DBDriver = MySQLi
+database.default.port = 3306
+
+# SMTP Email
+email.protocol = smtp
+email.SMTPHost = smtp.gmail.com
+email.SMTPUser = you@gmail.com
+email.SMTPPass = your_app_password
+email.SMTPPort = 587
+email.SMTPCrypto = tls
+email.fromEmail = you@gmail.com
+email.fromName = "Your App"
+email.mailType = html
