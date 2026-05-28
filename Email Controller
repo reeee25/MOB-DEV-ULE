@@ -1,0 +1,34 @@
+<?php
+namespace App\Controllers;
+
+use App\Models\EmailLogModel;
+use App\Services\EmailService;
+use CodeIgniter\Controller;
+
+class EmailController extends Controller
+{
+    // Send a test email
+    public function send()
+    {
+        $emailService = new EmailService();
+
+        $sent = $emailService->send(
+            'recipient@example.com',
+            'Test Email from CI4',
+            '<h2>Hello!</h2><p>This is a test email.</p>'
+        );
+
+        $msg = $sent ? 'Email sent successfully.' : 'Email failed. Check logs.';
+        return redirect()->back()->with($sent ? 'success' : 'error', $msg);
+    }
+
+    // View email logs
+    public function logs()
+    {
+        $model = new EmailLogModel();
+        return view('emails/logs', [
+            'logs' => $model->orderBy('created_at', 'DESC')->paginate(20),
+            'pager' => $model->pager,
+        ]);
+    }
+}
