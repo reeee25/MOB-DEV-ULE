@@ -1,0 +1,75 @@
+<?php
+namespace App\Controllers;
+
+use App\Models\UploadModel;
+use CodeIgniter\Controller;
+
+class UploadController extends Controller
+{
+    protected string $uploadPath = WRITEPATH . 'uploads/';
+
+    // Show upload form + list files
+    public function index()
+    {
+        $model = new UploadModel();
+        return view('uploads/index', [
+            'files' => $model->orderBy('created_at', 'DESC')->findAll(),
+        ]);
+    }
+
+    // Handle file upload
+    public function store()
+    {
+        $rules = [
+            'file' => [
+                'label' => 'File',
+                'rules' => 'uploaded[file]|max_size[file,5120]|ext_in[file,jpg,jpeg,png,gif,pdf,docx,xlsx,zip]',
+            ],
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->with('error', $this->validator->getErrors());
+        }
+
+        $file = $this->request->getFile('file');
+
+        if (!$file->isValid() || $file->hasMoved()) {
+            return redirect()->back()->with('error', 'Invalid file.');
+        }
+
+        // Move file to writable/uploads
+        $newName = $file->getRandomName();
+        $file->move($this->uploadPath, $newName);
+
+        $model = new UploadModel();
+        $model->insert([
+            'original_name' => $file->getClientName(),
+            'stored_name'   => $newName,
+            'file_type'     => $file->getClientMimeType(),
+            'file_size'     => $file->getSize(),
+            'uploaded_by'   => session()->get('user_id') ?? null,
+        ]);
+
+        return redirect()->to('/uploads')->with('success', 'File uploaded successfully.');
+    }
+
+    // Delete a file
+    public function delete(int $id)
+    {
+        $model = new UploadModel();
+        $record = $model->find($id);
+
+        if (!$record) {
+            return redirect()->back()->with('error', 'File not found.');
+        }
+
+        $path = $this->uploadPath . $record['stored_name'];
+        if (file_exists($path)) {
+            unlink($path);
+        }
+
+        $model->delete($id);
+
+        return redirect()->to('/uploads')->with('success', 'File deleted.');
+    }
+}
